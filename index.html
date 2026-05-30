@@ -3,29 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>如何简单制作一个属于自己风格的看板 - 通关指南</title>
+    <title>如何简单制作一个属于自己风格的看板 - 沉浸交互指南</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* 恢复原版的高级圆润字体 */
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap');
         
+        /* 1. 卡通 Q版高可见度鼠标：大号胖胖水滴 & 软糯小手套，带粗白边保证绝对清晰 */
         body {
             font-family: 'Nunito', 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
             margin: 0;
             overflow: hidden;
-            background-color: #f8fafc;
+            /* 【修改】告别单调纯白，使用梦幻极光渐变底色，高级且丰富 */
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
             color: #1e293b;
+            /* 超大号 Q版冰蓝渐变胖箭头 */
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 32 32'><defs><linearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2338bdf8'/><stop offset='100%25' stop-color='%23818cf8'/></linearGradient></defs><path d='M8 6C8 4.5 9.5 3.5 10.8 4.2L26 13.5C27.5 14.2 27.5 16.5 26 17.2L19.5 20L16 26.5C15.2 28 13 28 12.2 26.5L8 9Z' fill='url(%23grad)' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'/></svg>") 8 6, auto;
         }
 
+        /* 悬停：超可爱 Q版元气小熊爪 🐾 (带有软糯的肉垫和4个小脚趾) */
+        a, button, .cursor-pointer, [onclick], .nav-dot, .glass-button {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><defs><linearGradient id='pawGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23f472b6'/><stop offset='100%25' stop-color='%23fb7185'/></linearGradient></defs><g fill='url(%23pawGrad)' stroke='%23ffffff' stroke-width='2.5' stroke-linejoin='round'><circle cx='10' cy='16' r='4'/><circle cx='16' cy='10' r='4.5'/><circle cx='24' cy='10' r='4.5'/><circle cx='30' cy='16' r='4'/><path d='M 20 17 C 27 17 32 22 30 28 C 28 34 20 32 20 32 C 20 32 12 34 10 28 C 8 22 13 17 20 17 Z'/></g></svg>") 20 10, pointer !important;
+        }
+
+        /* 2. 原版极致磨砂玻璃质感 (提升通透感版) */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.45); /* 从 0.65 改为 0.45，增加通透度 */
             backdrop-filter: blur(24px) saturate(150%);
             -webkit-backdrop-filter: blur(24px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            border-top: 1px solid rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.6); /* 边框也同步变柔和 */
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
             box-shadow: 
                 0 15px 35px -5px rgba(0, 0, 0, 0.05),
-                0 0 0 1px rgba(255, 255, 255, 0.4) inset;
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset; /* 内阴影柔和化 */
+            transform-style: preserve-3d;
+            /* 【性能优化】移除 CSS 过渡，完全交给 JS requestAnimationFrame 的 Lerp (线性插值) 算法，确保极致 60 帧平滑 */
+            will-change: transform; 
+            position: relative;
+        }
+        
+        /* 确保文字和按钮在光照层之上，防止无法点击 */
+        .glass-panel > * {
+            position: relative;
+            z-index: 1; 
         }
 
         .glass-button {
@@ -41,6 +62,7 @@
             background: #ffffff;
         }
 
+        /* 原版渐变色 */
         .text-gradient {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
             -webkit-background-clip: text;
@@ -53,15 +75,16 @@
             -webkit-text-fill-color: transparent;
         }
 
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(40px, -40px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
+        /* 简约柔和光晕漂浮动画 (Drift) */
+        @keyframes drift {
+            0% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+            33% { transform: translate(30px, -50px) rotate(5deg) scale(1.05); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg) scale(0.95); }
+            100% { transform: translate(0px, 0px) rotate(0deg) scale(1); }
         }
-        .animate-blob { animation: blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
+        .drift-1 { animation: drift 18s infinite alternate ease-in-out; }
+        .drift-2 { animation: drift 22s infinite alternate-reverse ease-in-out; }
+        .drift-3 { animation: drift 25s infinite alternate ease-in-out; }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -73,17 +96,22 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* 3. 恢复原版惊艳的 3D 景深幻灯片切换 */
+        .scene {
+            perspective: 1200px; /* 开启 3D 空间 */
+        }
+        
         .slide {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding-bottom: 5rem; /* 安全底部间距，防止与小胶囊冲突 */
+            padding-bottom: 5rem;
             padding-top: 2rem;
             transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.8s ease; 
             opacity: 0;
-            pointer-events: none; /* 非激活态彻底阻断点击 */
+            pointer-events: none;
             visibility: hidden;
             will-change: transform, opacity, visibility;
             backface-visibility: hidden;
@@ -104,53 +132,61 @@
         .slide.active {
             transform: translateX(0) translateZ(0) rotateY(0deg);
             opacity: 1;
-            pointer-events: auto; /* 激活态允许点击 */
+            pointer-events: auto;
             visibility: visible;
             z-index: 10;
         }
 
+        /* 内部元素瀑布流 */
         .slide .stagger-item {
             opacity: 0;
             transform: translateY(20px) scale(0.98);
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform, opacity;
         }
-        
         .slide.active .stagger-item {
             opacity: 1;
             transform: translateY(0) scale(1);
         }
-        
         .slide.active .delay-1 { transition-delay: 0.1s; }
         .slide.active .delay-2 { transition-delay: 0.2s; }
         .slide.active .delay-3 { transition-delay: 0.3s; }
         .slide.active .delay-4 { transition-delay: 0.4s; }
 
-        .nav-dot {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .nav-dot { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .nav-dot.active {
             width: 1.5rem;
             border-radius: 9999px;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             opacity: 1;
         }
-        @media (min-width: 768px) {
-            .nav-dot.active { width: 2rem; }
+        @media (min-width: 768px) { .nav-dot.active { width: 2rem; } }
+
+        /* 4. 星辉拖尾特效 CSS */
+        .magic-trail {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 14px;
+            animation: fallAndFade 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes fallAndFade {
+            0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; filter: brightness(1.5); }
+            100% { transform: translateY(30px) scale(0.2) rotate(90deg); opacity: 0; }
         }
 
-        .confetti {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            opacity: 0;
-            animation: fall 3s ease-out forwards;
-            pointer-events: none;
+        /* 打字机光标 */
+        .typing-cursor {
+            display: inline-block;
+            width: 6px;
+            height: 1em;
+            background-color: currentColor;
+            vertical-align: middle;
+            margin-left: 4px;
+            animation: blink 1s step-end infinite;
         }
-        @keyframes fall {
-            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
+        @keyframes blink { 50% { opacity: 0; } }
 
         .toast {
             position: fixed;
@@ -166,26 +202,104 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
             z-index: 1000;
-            pointer-events: none; /* 绝对不阻挡点击 */
+            pointer-events: none;
             transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .toast.show {
-            top: 24px;
+        
+        .toast.show { top: 24px; }
+        
+        /* --- 动态打字完成后的关键字高亮样式 --- */
+        .hl-bg-blue {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.5);
+            margin: 0 0.15rem;
+            display: inline-block;
+            animation: popRotateLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .hl-ul-red {
+            border-bottom: 3px solid #ef4444;
+            color: #dc2626;
+            font-weight: 900;
+            padding: 0 0.1rem;
+            display: inline-block;
+            animation: popScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .hl-bg-red {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px -2px rgba(239, 68, 68, 0.5);
+            margin: 0 0.15rem;
+            display: inline-block;
+            animation: popRotateRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .hl-ul-indigo {
+            border-bottom: 3px solid #6366f1;
+            color: #4f46e5;
+            font-weight: 900;
+            padding: 0 0.1rem;
+            display: inline-block;
+            animation: popScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .hl-bg-pink {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 10px -2px rgba(236, 72, 153, 0.5);
+            margin: 0 0.15rem;
+            display: inline-block;
+            animation: popRotateLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .hl-ul-orange {
+            border-bottom: 3px solid #f97316;
+            color: #ea580c;
+            font-weight: 900;
+            padding: 0 0.1rem;
+            display: inline-block;
+            animation: popScale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes popRotateLeft {
+            0% { transform: rotate(-2deg) scale(0.8); opacity: 0; }
+            100% { transform: rotate(-2deg) scale(1); opacity: 1; }
+        }
+        @keyframes popRotateRight {
+            0% { transform: rotate(2deg) scale(0.8); opacity: 0; }
+            100% { transform: rotate(2deg) scale(1); opacity: 1; }
+        }
+        @keyframes popScale {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body class="w-screen h-screen relative flex items-center justify-center scene overflow-hidden">
 
-    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div class="absolute top-[-5%] left-[-5%] w-[40vw] h-[40vw] bg-blue-200/50 rounded-full mix-blend-multiply filter blur-[100px] animate-blob"></div>
-        <div class="absolute top-[15%] right-[-10%] w-[35vw] h-[35vw] bg-purple-200/50 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-2000"></div>
-        <div class="absolute bottom-[-10%] left-[20%] w-[45vw] h-[45vw] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[100px] animate-blob animation-delay-4000"></div>
+    <!-- 优雅粒子Canvas背景（无杂乱线条，静谧流光） -->
+    <canvas id="magicCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.8;"></canvas>
+
+    <!-- 终极震撼撒花专用 Canvas -->
+    <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-[100]"></canvas>
+
+    <!-- 修改：移除沉重的暗角，让渐变底色透出来，更清爽 -->
+    <div class="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_50%_50%,transparent_0%,rgba(15,23,42,0.15)_100%)]"></div>
+
+    <!-- 【性能究极优化】移除极其卡顿的 CSS blur() 滤镜和 mix-blend，改用原生的径向渐变，FPS 直接暴涨 -->
+    <div id="auraBackground" class="bg-aura fixed inset-0 overflow-hidden pointer-events-none -z-20 opacity-100 ease-out" style="will-change: transform;">
+        <div class="absolute rounded-full w-[60vw] h-[60vw] top-[-15%] left-[-10%] drift-1" style="background: radial-gradient(circle, rgba(165, 180, 252, 0.4) 0%, transparent 70%);"></div>
+        <div class="absolute rounded-full w-[65vw] h-[65vw] bottom-[-20%] right-[-10%] drift-2" style="background: radial-gradient(circle, rgba(240, 171, 252, 0.3) 0%, transparent 70%);"></div>
+        <div class="absolute rounded-full w-[55vw] h-[55vw] top-[40%] left-[30%] drift-3" style="background: radial-gradient(circle, rgba(186, 230, 253, 0.4) 0%, transparent 70%);"></div>
     </div>
 
-    <!-- 优化点：去除了 scale 属性，减小了 padding 和 gap，确保物理居中不偏差 -->
+    <!-- 底部导航 -->
     <div class="fixed bottom-5 md:bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-50 glass-panel px-4 py-2 md:px-5 md:py-2.5 rounded-full shadow-lg">
         <div id="dotContainer" class="flex items-center gap-2"></div>
         <div class="w-[1.5px] h-4 bg-gray-300 mx-1.5 rounded-full"></div>
@@ -196,7 +310,7 @@
 
         <!-- 关卡0：开场封面 -->
         <div class="slide active px-4 md:px-6">
-            <div class="glass-panel w-full max-w-4xl rounded-[2.5rem] p-8 md:p-12 flex flex-col items-center text-center relative overflow-y-auto hide-scrollbar max-h-full">
+            <div class="glass-panel w-full max-w-4xl rounded-[2.5rem] p-8 md:p-12 flex flex-col items-center text-center relative overflow-y-auto hide-scrollbar max-h-full border-t-4 border-t-white/80">
                 
                 <div class="w-24 h-24 md:w-28 md:h-28 bg-white/90 rounded-[2rem] shadow-xl flex items-center justify-center mb-6 animate-float stagger-item delay-1 border-2 border-white/80 shrink-0">
                     <i class="fas fa-gamepad text-5xl md:text-6xl icon-gradient"></i>
@@ -214,10 +328,10 @@
                 </h1>
                 
                 <p class="text-base md:text-xl text-gray-600 mb-8 max-w-2xl leading-relaxed stagger-item delay-3 font-bold shrink-0">
-                    抛开繁杂的代码与长篇大论。我们将制作过程变成了一场 <b class="text-purple-600 bg-purple-100/50 px-3 py-1 rounded-xl border border-purple-200 mx-1 inline-block transform hover:scale-105 transition-transform cursor-default">3关卡游戏</b> 🎮<br>跟着步骤，打造出科技感拉满的神仙级工作台！
+                    抛开繁杂的代码与长篇大论。我们将制作过程变成了一场 <b class="text-purple-600 bg-purple-100/50 px-3 py-1 rounded-xl border border-purple-200 mx-1 inline-block transform hover:scale-105 transition-transform cursor-pointer">3关卡游戏</b> 🎮<br>跟着步骤，打造出科技感拉满的神仙级工作台！
                 </p>
                 
-                <button onclick="gameLogic.nextSlide()" class="shrink-0 px-8 py-3 md:px-10 md:py-4 rounded-[1.5rem] bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-black text-lg md:text-xl hover:shadow-[0_10px_30px_-10px_rgba(79,70,229,0.6)] transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 stagger-item delay-4 flex items-center gap-3 border-b-4 border-indigo-700 active:border-b-0 active:translate-y-0">
+                <button onclick="gameLogic.nextSlide()" class="shrink-0 px-8 py-3 md:px-10 md:py-4 rounded-[1.5rem] bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-black text-lg md:text-xl hover:shadow-[0_10px_30px_-10px_rgba(79,70,229,0.6)] transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 stagger-item delay-4 flex items-center gap-3 border-b-4 border-indigo-700 active:border-b-0 active:translate-y-0 cursor-pointer">
                     开始闯关之旅 <i class="fas fa-rocket animate-bounce"></i>
                 </button>
             </div>
@@ -227,7 +341,6 @@
         <div class="slide next px-4 md:px-6">
             <div class="glass-panel w-full max-w-5xl rounded-[2.5rem] p-6 md:p-12 flex flex-col md:flex-row relative overflow-y-auto hide-scrollbar max-h-full">
                 <div class="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-blue-400 to-cyan-400 hidden md:block"></div>
-                <div class="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-blue-400 to-cyan-400 md:hidden"></div>
                 
                 <div class="flex-1 flex flex-col justify-center mt-3 md:mt-0">
                     <div class="flex items-center gap-4 mb-4 md:mb-6 stagger-item delay-1">
@@ -240,16 +353,20 @@
                         在画看板之前，先解决“看不懂”的问题。不要自己梳理打架的标准，让 AI 帮你划重点！
                     </p>
                     
-                    <div class="bg-white/70 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl mb-6 md:mb-8 stagger-item delay-3 relative group transform hover:scale-[1.01] transition-transform">
+                    <!-- 融合打字机特效 -->
+                    <div class="bg-white/80 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl mb-6 md:mb-8 stagger-item delay-3 relative group hover:scale-[1.01] transition-transform">
                         <div class="absolute -left-3 -top-4 w-10 h-10 bg-cyan-200 text-cyan-700 rounded-full flex items-center justify-center text-lg font-black shadow-lg transform group-hover:rotate-[360deg] transition-transform duration-700"><i class="fas fa-magic"></i></div>
                         <p class="text-xs md:text-sm text-gray-500 mb-2 font-black uppercase tracking-widest">🎯 核心话术</p>
                         <p class="text-gray-800 font-bold text-lg md:text-xl leading-snug tracking-tight">
-                            “请帮我把这段标准重新梳理逻辑，合并重复项。<span class="text-white font-black bg-blue-500 px-2 py-0.5 rounded-lg shadow-sm inline-block transform -rotate-1 mt-1 border border-blue-400">绝对不许漏掉</span>原文里的任何注意事项、警告和数据指标！”
+                            <span class="typing-text" 
+                                  data-text="“请帮我把这段标准重新梳理逻辑，合并重复项。绝对不许漏掉原文里的任何注意事项、警告和数据指标！”"
+                                  data-rich="“请帮我把这段标准重新梳理逻辑，合并重复项。<span class='hl-bg-blue'>绝对不许漏掉</span>原文里的任何<span class='hl-ul-red'>注意事项</span>、警告和数据指标！”">
+                            </span><span class="typing-cursor text-cyan-500"></span>
                         </p>
                     </div>
                     
                     <div class="stagger-item delay-4">
-                        <button onclick="gameLogic.nextSlide()" class="px-6 py-2.5 md:px-8 md:py-3 rounded-2xl bg-gray-800 text-white font-black text-base md:text-lg hover:shadow-lg transform hover:-translate-y-1 hover:rotate-1 transition-all flex items-center gap-2 border-b-4 border-gray-900 active:border-b-0 active:translate-y-0">
+                        <button onclick="gameLogic.nextSlide()" class="px-6 py-2.5 md:px-8 md:py-3 rounded-2xl bg-gray-800 text-white font-black text-base md:text-lg hover:shadow-lg transform hover:-translate-y-1 hover:rotate-1 transition-all flex items-center gap-2 border-b-4 border-gray-900 active:border-b-0 active:translate-y-0 cursor-pointer">
                             搞定，下一关 <i class="fas fa-arrow-right animate-pulse"></i>
                         </button>
                     </div>
@@ -267,7 +384,6 @@
         <div class="slide px-4 md:px-6">
             <div class="glass-panel w-full max-w-5xl rounded-[2.5rem] p-6 md:p-12 flex flex-col md:flex-row relative overflow-y-auto hide-scrollbar max-h-full">
                 <div class="absolute right-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-indigo-400 to-purple-400 hidden md:block"></div>
-                <div class="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-indigo-400 to-purple-400 md:hidden"></div>
                 
                 <div class="hidden md:flex w-5/12 items-center justify-center relative stagger-item delay-3 shrink-0">
                     <div class="w-48 h-48 lg:w-56 lg:h-56 bg-gradient-to-tl from-indigo-300 to-purple-400 rounded-full flex items-center justify-center shadow-2xl animate-float border-4 border-white/80">
@@ -286,16 +402,20 @@
                         看板的命脉是数据的准确性。强制要求 AI 保留所有专业术语和判定结论，一字不改。
                     </p>
                     
-                    <div class="bg-red-50/80 p-5 md:p-6 rounded-[1.5rem] border-2 border-red-200 shadow-xl mb-6 md:mb-8 stagger-item delay-3 relative group transform hover:scale-[1.01] transition-transform">
+                    <!-- 融合打字机特效 -->
+                    <div class="bg-red-50/90 p-5 md:p-6 rounded-[1.5rem] border-2 border-red-200 shadow-xl mb-6 md:mb-8 stagger-item delay-3 relative group hover:scale-[1.01] transition-transform">
                         <div class="absolute -left-3 -top-4 w-10 h-10 bg-red-200 text-red-600 rounded-full flex items-center justify-center text-lg font-black shadow-lg animate-pulse"><i class="fas fa-exclamation-triangle"></i></div>
                         <p class="text-xs md:text-sm text-red-500 mb-2 font-black uppercase tracking-widest">🚫 防错话术</p>
                         <p class="text-gray-800 font-bold text-lg md:text-xl leading-snug tracking-tight">
-                            “警告：涉及<span class="text-white font-black bg-red-500 px-2 py-0.5 rounded-lg shadow-sm inline-block transform rotate-1 mt-1 border border-red-400">质检结论、判定条件和状态描述</span>，必须100%复制我的原话，一个字都不许改！”
+                            <span class="typing-text" 
+                                  data-text="“警告：涉及质检结论、判定条件和状态描述，必须100%复制我的原话，一个字都不许改！”"
+                                  data-rich="“警告：涉及<span class='hl-bg-red'>质检结论</span>、判定条件和状态描述，必须<span class='hl-ul-indigo'>100%复制我的原话</span>，一个字都不许改！”">
+                            </span><span class="typing-cursor text-red-500"></span>
                         </p>
                     </div>
                     
                     <div class="stagger-item delay-4">
-                        <button onclick="gameLogic.nextSlide()" class="px-6 py-2.5 md:px-8 md:py-3 rounded-2xl bg-gray-800 text-white font-black text-base md:text-lg hover:shadow-lg transform hover:-translate-y-1 hover:-rotate-1 transition-all flex items-center gap-2 border-b-4 border-gray-900 active:border-b-0 active:translate-y-0">
+                        <button onclick="gameLogic.nextSlide()" class="px-6 py-2.5 md:px-8 md:py-3 rounded-2xl bg-gray-800 text-white font-black text-base md:text-lg hover:shadow-lg transform hover:-translate-y-1 hover:-rotate-1 transition-all flex items-center gap-2 border-b-4 border-gray-900 active:border-b-0 active:translate-y-0 cursor-pointer">
                             明白，下一关 <i class="fas fa-arrow-right animate-pulse"></i>
                         </button>
                     </div>
@@ -307,7 +427,6 @@
         <div class="slide px-4 md:px-6">
             <div class="glass-panel w-full max-w-5xl rounded-[2.5rem] p-6 md:p-12 flex flex-col relative overflow-y-auto hide-scrollbar max-h-full">
                 <div class="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-b from-pink-400 to-rose-400 hidden md:block"></div>
-                <div class="absolute top-0 left-0 right-0 h-2.5 bg-gradient-to-r from-pink-400 to-rose-400 md:hidden"></div>
                 
                 <div class="flex items-center gap-4 mb-5 md:mb-6 stagger-item delay-1 mx-auto mt-2 md:mt-0">
                     <div class="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-pink-100 flex items-center justify-center text-pink-600 text-2xl md:text-3xl font-black border-[3px] border-white shadow-lg transform -rotate-6 shrink-0">3</div>
@@ -319,23 +438,33 @@
                 </p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-6 md:mb-8">
-                    <div class="bg-white/80 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl hover:-translate-y-1 transition-transform stagger-item delay-2 group">
+                    <div class="bg-white/90 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl hover:-translate-y-1 transition-transform stagger-item delay-2 group">
                         <div class="flex items-center gap-3 mb-3 md:mb-4 text-pink-600 font-black text-lg md:text-xl">
                             <i class="fas fa-layer-group p-2.5 bg-pink-100 rounded-xl text-xl md:text-2xl transform group-hover:rotate-12 transition-transform"></i> 动作一：生成框架
                         </div>
-                        <p class="text-gray-700 font-bold text-base md:text-lg leading-relaxed">“刚刚的内容很好。现在请用这段内容，帮我生成一个前端网页看板。要求分块显示，界面干净。”</p>
+                        <p class="text-gray-700 font-bold text-base md:text-lg leading-relaxed min-h-[4rem]">
+                            <span class="typing-text" 
+                                  data-text="“刚刚的内容很好。现在请用这段内容帮我生成前端网页看板。要求分块显示界面干净。”"
+                                  data-rich="“刚刚的内容很好。现在请用这段内容帮我生成<span class='hl-bg-pink'>前端网页看板</span>。要求<span class='hl-ul-indigo'>分块显示</span>界面干净。”">
+                            </span><span class="typing-cursor text-pink-500"></span>
+                        </p>
                     </div>
                     
-                    <div class="bg-white/80 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl hover:-translate-y-1 transition-transform stagger-item delay-3 group">
+                    <div class="bg-white/90 p-5 md:p-6 rounded-[1.5rem] border-2 border-white shadow-xl hover:-translate-y-1 transition-transform stagger-item delay-3 group">
                         <div class="flex items-center gap-3 mb-3 md:mb-4 text-orange-600 font-black text-lg md:text-xl">
                             <i class="fas fa-paint-roller p-2.5 bg-orange-100 rounded-xl text-xl md:text-2xl transform group-hover:-rotate-12 transition-transform"></i> 动作二：局部装修
                         </div>
-                        <p class="text-gray-700 font-bold text-base md:text-lg leading-relaxed">“文字定稿别动！我只对【XX模块】排版不满意。<span class="text-white font-black bg-orange-500 px-2 py-0.5 rounded-lg inline-block mt-1 border border-orange-400 shadow-sm">请你只针对这个模块重新排版</span>，其他保持原样。”</p>
+                        <p class="text-gray-700 font-bold text-base md:text-lg leading-relaxed min-h-[4rem]">
+                            <span class="typing-text" 
+                                  data-text="“文字定稿别动！我只对【XX模块】排版不满意。请针对这个模块重新排版，其他保持原样。”"
+                                  data-rich="“<span class='hl-bg-red'>文字定稿别动！</span>我只对【XX模块】排版不满意。请针对这个模块<span class='hl-ul-orange'>重新排版</span>，其他保持原样。”">
+                            </span><span class="typing-cursor text-orange-500"></span>
+                        </p>
                     </div>
                 </div>
 
                 <div class="stagger-item delay-4 flex justify-center w-full pb-1">
-                    <button onclick="gameLogic.nextSlide()" class="px-8 py-3 md:px-10 md:py-4 rounded-[1.5rem] bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black text-lg md:text-xl hover:shadow-[0_10px_30px_-5px_rgba(244,63,94,0.5)] transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 flex items-center gap-3 group border-b-4 border-rose-700 active:border-b-0 active:translate-y-0">
+                    <button onclick="gameLogic.nextSlide()" class="px-8 py-3 md:px-10 md:py-4 rounded-[1.5rem] bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black text-lg md:text-xl hover:shadow-[0_10px_30px_-5px_rgba(244,63,94,0.5)] transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 flex items-center gap-3 group border-b-4 border-rose-700 active:border-b-0 active:translate-y-0 cursor-pointer">
                         <i class="fas fa-unlock-alt group-hover:rotate-12 transition-transform text-xl md:text-2xl"></i> 解锁最终关卡
                     </button>
                 </div>
@@ -346,7 +475,7 @@
         <div class="slide px-4 md:px-6">
             <div class="glass-panel w-full max-w-4xl rounded-[2.5rem] p-8 md:p-12 flex flex-col items-center text-center relative overflow-y-auto hide-scrollbar max-h-full bg-gradient-to-br from-white/90 to-green-50/80 border-2 border-green-100 shadow-2xl">
                 
-                <button onclick="gameLogic.openEggModal()" class="absolute top-5 right-5 md:top-6 md:right-6 w-12 h-12 md:w-14 md:h-14 bg-white/95 backdrop-blur border-2 border-purple-200 rounded-full flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-500 hover:scale-110 hover:rotate-12 transition-all shadow-xl z-20 group animate-bounce animation-delay-2000 shrink-0">
+                <button onclick="gameLogic.openEggModal()" class="absolute top-5 right-5 md:top-6 md:right-6 w-12 h-12 md:w-14 md:h-14 bg-white/95 backdrop-blur border-2 border-purple-200 rounded-full flex items-center justify-center text-purple-600 hover:text-white hover:bg-purple-500 hover:scale-110 hover:rotate-12 transition-all shadow-xl z-20 group animate-bounce animation-delay-2000 shrink-0 cursor-pointer">
                     <i class="fas fa-gift text-xl md:text-2xl"></i>
                     <span class="absolute -bottom-8 bg-purple-600 text-white text-xs md:text-sm font-black px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg pointer-events-none">点我拆彩蛋！</span>
                 </button>
@@ -364,10 +493,9 @@
                 <p class="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed stagger-item delay-3 font-bold max-w-2xl shrink-0">
                     工具只是助理，咱们的经验才是核心！<br>
                     祝大家都能轻松用 AI 搭出属于自己的<br><b class="text-white bg-green-500 px-3 py-1 md:px-4 md:py-1.5 rounded-xl inline-block mt-2 md:mt-3 shadow-md transform -rotate-1 border border-green-400">神仙网页看板 ✨</b><br>
-                    <span class="text-green-600 block mt-2 md:mt-3 text-lg md:text-xl font-black drop-shadow-sm">让工作越干越爽，早干完早下班！</span>
                 </p>
                 
-                <button onclick="gameLogic.goToSlide(0)" class="shrink-0 px-6 py-2.5 md:px-8 md:py-3 rounded-2xl glass-button text-gray-700 font-black text-base md:text-lg hover:text-green-600 transition-all stagger-item delay-4 flex items-center gap-2 group border-b-4 border-gray-200 active:border-b-0 active:translate-y-0">
+                <button onclick="gameLogic.goToSlide(0)" class="shrink-0 px-6 py-2.5 md:px-8 md:py-3 rounded-2xl glass-button text-gray-700 font-black text-base md:text-lg hover:text-green-600 transition-all stagger-item delay-4 flex items-center gap-2 group border-b-4 border-gray-200 active:border-b-0 active:translate-y-0 cursor-pointer">
                     <i class="fas fa-undo group-hover:-rotate-180 transition-transform duration-700 text-lg md:text-xl"></i> 再玩一遍
                 </button>
             </div>
@@ -375,12 +503,11 @@
 
     </main>
 
-    <!-- 关键修复：初始状态使用 pointer-events-none 彻底解除全屏遮挡 -->
+    <!-- 隐藏彩蛋弹窗 -->
     <div id="eggModal" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none hidden">
         <div id="eggOverlay" class="absolute inset-0 bg-slate-900/50 backdrop-blur-md opacity-0 transition-opacity duration-400" onclick="gameLogic.closeEggModal()"></div>
-        <!-- 移除了这里的 pointer-events-auto 避免覆盖死区 -->
         <div id="eggContent" class="glass-panel p-8 md:p-10 max-w-md w-full mx-6 rounded-[2rem] relative transform scale-95 translate-y-10 opacity-0 transition-all duration-400 flex flex-col items-center text-center bg-gradient-to-br from-white/95 to-purple-50/95 border-2 border-purple-200 shadow-2xl">
-            <button onclick="gameLogic.closeEggModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-all text-lg">
+            <button onclick="gameLogic.closeEggModal()" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-all text-lg cursor-pointer">
                 <i class="fas fa-times"></i>
             </button>
             <div class="w-20 h-20 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-4xl mb-5 shadow-xl shadow-purple-500/40 rotate-6 transform hover:scale-110 transition-transform cursor-pointer">
@@ -390,7 +517,7 @@
             <p class="text-gray-600 text-base mb-5 font-bold">想要同款神仙看板？直接把这串暗号发给 AI 助理：</p>
             <div class="bg-gray-900 w-full p-5 rounded-2xl relative group text-left border-[3px] border-gray-800">
                 <p class="text-purple-300 text-base font-mono font-bold leading-relaxed select-all" id="promptText">
-                    磨砂玻璃卡片，炫光渐变背景，幻灯片切换，蓝色紫色点缀，圆润图标，悬停动效
+                    磨砂玻璃卡片，炫光渐变背景，3D空间翻页切换，加上一点Q版的互动特效！
                 </p>
                 <div class="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl cursor-pointer" onclick="gameLogic.copyPrompt()">
                     <span class="text-white font-black text-lg"><i class="fas fa-copy mr-2"></i> 点击复制</span>
@@ -404,11 +531,324 @@
     </div>
 
     <script>
+        // 【全新重构】适配 Q版 UI 的“Dribbble 顶级设计感”魔法庆典系统
+        const confettiSystem = {
+            canvas: null,
+            ctx: null,
+            particles: [],
+            animating: false,
+            // 完美匹配 UI 的通透高级糖果色 + 纯白高光星点
+            colors: ['#f472b6', '#fbbf24', '#38bdf8', '#a78bfa', '#34d399', '#ffffff', '#ffffff'],
+            types: ['pill', 'pill', 'star', 'bubble'], // 胶囊、魔法星、泡泡混合
+            
+            init() {
+                this.canvas = document.getElementById('confettiCanvas');
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            },
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            },
+            fire() {
+                this.particles = [];
+                // 【性能优化】稍微减少喷发数量，配合缩小尺寸依然丰满
+                const count = 90; 
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                for (let i = 0; i < count; i++) {
+                    // 从底部中心和两侧同时喷发，形成完美扇形
+                    let startX = w / 2;
+                    let dir = (Math.random() - 0.5) * 2; 
+                    if (i % 3 === 0) { startX = 0; dir = Math.random() * 0.8 + 0.2; }
+                    else if (i % 3 === 1) { startX = w; dir = -(Math.random() * 0.8 + 0.2); }
+                    
+                    this.particles.push(this.createParticle(startX, h + 20, dir)); 
+                }
+
+                if (!this.animating) {
+                    this.animating = true;
+                    this.animate();
+                }
+            },
+            createParticle(x, y, dir) {
+                const colorIdx = Math.floor(Math.random() * this.colors.length);
+                const type = this.types[Math.floor(Math.random() * this.types.length)];
+                return {
+                    x: x,
+                    y: y,
+                    type: type,
+                    // 【调整】保持精巧可爱的迷你 Q 版图标
+                    size: Math.random() * 5 + 4,  
+                    // 【升级】大幅增强爆发初速度，让粒子轻松冲破屏幕顶端！
+                    vx: (Math.random() * 25 + 8) * dir,
+                    vy: -(Math.random() * 50 + 35), 
+                    color: this.colors[colorIdx],
+                    rot: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.2,
+                    // 【优化】减弱空气阻力，让粒子飞得更高，配合轻盈重力实现全屏飘落
+                    gravity: Math.random() * 0.15 + 0.1,  // 更轻的重力
+                    friction: 0.95,                       // 阻力从 0.90 降至 0.95，滑翔更远
+                    sway: Math.random() * 0.05,           // 摇曳频率
+                    swayPhase: Math.random() * Math.PI * 2,
+                    opacity: 1
+                };
+            },
+            drawStar(ctx, x, y, r, color) {
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    ctx.lineTo(x + Math.cos(i * Math.PI / 2) * r, y + Math.sin(i * Math.PI / 2) * r);
+                    ctx.lineTo(x + Math.cos(i * Math.PI / 2 + Math.PI / 4) * (r * 0.35), y + Math.sin(i * Math.PI / 2 + Math.PI / 4) * (r * 0.35));
+                }
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            },
+            animate() {
+                if (this.particles.length === 0) {
+                    this.animating = false;
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    return;
+                }
+                requestAnimationFrame(() => this.animate());
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    let p = this.particles[i];
+                    
+                    // 物理迭代
+                    p.vx *= p.friction;
+                    p.vy *= p.friction; 
+                    p.vy += p.gravity;
+                    
+                    // 柔和的左右摇曳
+                    p.swayPhase += p.sway;
+                    const swayAmount = Math.sin(p.swayPhase) * 1.5;
+                    
+                    p.x += p.vx + swayAmount;
+                    p.y += p.vy;
+                    p.rot += p.rotSpeed;
+                    p.flip += p.flipSpeed;
+
+                    // 渐隐消失
+                    if (p.y > this.canvas.height * 0.6) {
+                        p.opacity -= 0.015;
+                    }
+
+                    if (p.opacity <= 0 || p.y > this.canvas.height + 50) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+
+                    this.ctx.save();
+                    this.ctx.translate(p.x, p.y);
+                    this.ctx.rotate(p.rot);
+                    
+                    // 3D 翻转错觉
+                    const scaleY = Math.cos(p.flip);
+                    this.ctx.scale(1, scaleY);
+                    this.ctx.globalAlpha = Math.max(0, p.opacity);
+
+                    // ---------------- 核心：绘制 UI 级高定组件 ----------------
+                    if (p.type === 'glassCard') {
+                        // 1. 迷你磨砂玻璃卡片 (完美复刻看板本体)
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(-p.size, -p.size * 0.7, p.size * 2, p.size * 1.4, p.size * 0.3);
+                        this.ctx.fill();
+                        this.ctx.stroke();
+                        // 玻璃高光
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(-p.size + 2, -p.size * 0.7 + 2, p.size * 2 - 4, p.size * 0.4, p.size * 0.2);
+                        this.ctx.fill();
+                    } 
+                    else if (p.type === 'ring') {
+                        // 2. Q版空心圆环 (呼应底部的导航点和图标外圈)
+                        this.ctx.strokeStyle = p.isTranslucent ? this.hexToRgba(p.color, 0.6) : p.color;
+                        this.ctx.lineWidth = p.size * 0.4;
+                        this.ctx.beginPath();
+                        this.ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                        this.ctx.stroke();
+                    } 
+                    else if (p.type === 'pill') {
+                        // 3. 糖果色胖胶囊 (呼应玻璃按钮)
+                        this.ctx.fillStyle = p.isTranslucent ? this.hexToRgba(p.color, 0.7) : p.color;
+                        this.ctx.beginPath();
+                        this.ctx.roundRect(-p.size, -p.size * 0.45, p.size * 2, p.size * 0.9, p.size * 0.45);
+                        this.ctx.fill();
+                        // 胶囊高光
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                        this.ctx.beginPath();
+                        this.ctx.arc(-p.size * 0.4, -p.size * 0.15, p.size * 0.15, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    } 
+                    else if (p.type === 'star') {
+                        // 4. 魔法四角星 (呼应原版 ✨ 图标)
+                        this.drawStar(this.ctx, 0, 0, p.size * 1.5, p.isTranslucent ? this.hexToRgba(p.color, 0.8) : p.color);
+                    }
+
+                    this.ctx.restore();
+                }
+            },
+            hexToRgba(hex, alpha) {
+                let r = parseInt(hex.slice(1, 3), 16);
+                let g = parseInt(hex.slice(3, 5), 16);
+                let b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+        };
+
+        // 【极速 60帧优化版】优雅静谧的 Canvas 粒子系统
+        const initMagicCanvas = () => {
+            const canvas = document.getElementById('magicCanvas');
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+            let particles = [];
+            
+            // 目标鼠标位置
+            let targetMouseX = window.innerWidth / 2;
+            let targetMouseY = window.innerHeight / 2;
+            // 平滑插值的渲染位置
+            let smoothMouseX = targetMouseX;
+            let smoothMouseY = targetMouseY;
+            
+            let w, h;
+            const auraBg = document.getElementById('auraBackground');
+
+            class SoftParticle {
+                constructor() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.z = Math.random() * 2.5 + 0.5; 
+                    this.vx = (Math.random() - 0.5) * 0.15;
+                    this.vy = (Math.random() - 0.5) * 0.15;
+                    this.baseRadius = Math.random() * 2.5 + 1.0;
+                    this.alpha = Math.random() * 0.6 + 0.3;
+                    this.hue = Math.random() * 40 + 200; // 偏向冰蓝和紫色
+                }
+                draw() {
+                    const parallaxX = (w / 2 - smoothMouseX) * (1 / this.z) * 0.1;
+                    const parallaxY = (h / 2 - smoothMouseY) * (1 / this.z) * 0.1;
+                    const drawX = this.x + parallaxX;
+                    const drawY = this.y + parallaxY;
+                    
+                    const r = this.baseRadius * (1 / this.z) * 1.5; 
+                    const colorAlpha = this.alpha * (1 - (this.z - 0.5) / 3); 
+
+                    // 【性能优化】极简单层绘制，不使用叠层和复杂计算，速度拉满
+                    ctx.beginPath();
+                    ctx.arc(drawX, drawY, r, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${this.hue}, 80%, 90%, ${colorAlpha})`;
+                    ctx.fill();
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < -50) this.x = w + 50;
+                    if (this.x > w + 50) this.x = -50;
+                    if (this.y < -50) this.y = h + 50;
+                    if (this.y > h + 50) this.y = -50;
+                }
+            }
+
+            // 【性能优化】减少环境微尘粒子数至 45，减轻重绘压力，保证流畅
+            function initParticles(count = 45) {
+                particles = [];
+                for (let i = 0; i < count; i++) particles.push(new SoftParticle());
+            }
+
+            function animateParticles() {
+                if (!ctx) return;
+                
+                smoothMouseX += (targetMouseX - smoothMouseX) * 0.1;
+                smoothMouseY += (targetMouseY - smoothMouseY) * 0.1;
+                
+                ctx.clearRect(0, 0, w, h);
+                for (let p of particles) {
+                    p.update();
+                    p.draw();
+                }
+                
+                // 【修改】降低 3D 幅度：将除数从 60 增大到 200，动作极其轻微不晃眼
+                const activePanel = document.querySelector('.slide.active .glass-panel');
+                if (activePanel) {
+                    const xAxis = (w / 2 - smoothMouseX) / 200; 
+                    const yAxis = (h / 2 - smoothMouseY) / 200;
+                    activePanel.style.transform = `perspective(1200px) rotateY(${xAxis}deg) rotateX(${-yAxis}deg) scale3d(1.005, 1.005, 1.005)`;
+                }
+
+                if (auraBg) {
+                    const moveX = (w / 2 - smoothMouseX) * 0.01;
+                    const moveY = (h / 2 - smoothMouseY) * 0.01;
+                    auraBg.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                }
+
+                requestAnimationFrame(animateParticles);
+            }
+
+            function resizeCanvas() {
+                w = window.innerWidth;
+                h = window.innerHeight;
+                canvas.width = w;
+                canvas.height = h;
+                initParticles(110);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Mousemove 只负责更新目标位置，解耦繁重的 DOM 渲染
+            window.addEventListener('mousemove', (e) => {
+                targetMouseX = e.clientX;
+                targetMouseY = e.clientY;
+            });
+
+            // 鼠标移出屏幕时恢复中心点原状
+            window.addEventListener('mouseout', () => {
+                targetMouseX = w / 2;
+                targetMouseY = h / 2;
+            });
+
+            resizeCanvas();
+            animateParticles();
+        };
+
+        // 保留原版的丝滑星辉拖尾特效 (与Canvas背景相得益彰)
+        let lastTrailTime = 0;
+        const trailIcons = ['✨', '✦', '⭐', '🪄'];
+        const trailColors = ['text-blue-400', 'text-pink-400', 'text-purple-400', 'text-yellow-400'];
+
+        document.addEventListener('mousemove', (e) => {
+            const now = Date.now();
+            if (now - lastTrailTime < 50) return; 
+            lastTrailTime = now;
+
+            const trail = document.createElement('div');
+            trail.className = 'magic-trail ' + trailColors[Math.floor(Math.random() * trailColors.length)];
+            trail.innerText = trailIcons[Math.floor(Math.random() * trailIcons.length)];
+            
+            trail.style.left = (e.clientX + Math.random() * 10 - 5) + 'px';
+            trail.style.top = (e.clientY + 15) + 'px';
+            
+            document.body.appendChild(trail);
+
+            setTimeout(() => {
+                trail.remove();
+            }, 800);
+        });
+
+        // 原有游戏逻辑保持不变
         const gameLogic = {
             currentSlide: 0,
             slides: document.querySelectorAll('.slide'),
             totalSlides: 0,
             isAnimating: false,
+            typingTimers: [],
 
             init() {
                 this.totalSlides = this.slides.length;
@@ -419,15 +859,17 @@
                     if (e.key === 'ArrowRight') this.nextSlide();
                     if (e.key === 'ArrowLeft') this.prevSlide();
                 });
+
+                // 启动优雅星屑 Canvas
+                initMagicCanvas();
             },
 
             buildDots() {
                 const container = document.getElementById('dotContainer');
-                container.innerHTML = ''; // 清除可能残留的圆点
+                container.innerHTML = ''; 
                 for (let i = 0; i < this.totalSlides; i++) {
                     const dot = document.createElement('button');
-                    // 更小的原点尺寸
-                    dot.className = `nav-dot w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-gray-300 hover:bg-blue-400 opacity-60`;
+                    dot.className = `nav-dot w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-gray-300 hover:bg-blue-400 opacity-60 cursor-pointer`;
                     dot.onclick = () => this.goToSlide(i);
                     container.appendChild(dot);
                 }
@@ -437,11 +879,14 @@
                 if (this.isAnimating) return;
                 this.isAnimating = true;
 
+                this.clearTyping();
+
                 this.slides.forEach((slide, index) => {
                     slide.classList.remove('active', 'prev', 'next');
                     
                     if (index === this.currentSlide) {
                         slide.classList.add('active');
+                        setTimeout(() => this.triggerTyping(slide), 600);
                     } else if (index < this.currentSlide) {
                         slide.classList.add('prev');
                     } else {
@@ -463,32 +908,76 @@
                 document.getElementById('progressText').innerText = `${this.currentSlide === 0 ? 'Start' : this.currentSlide} / ${this.totalSlides - 1}`;
 
                 if (this.currentSlide === this.totalSlides - 1) {
-                    this.fireConfetti();
+                    setTimeout(() => this.fireConfetti(), 400);
                 }
 
+                // 添加缺失的结束动画计时器以修复运行错误
                 setTimeout(() => {
                     this.isAnimating = false;
                 }, 800);
             },
 
+            // 融合打字机效果
+            triggerTyping(slide) {
+                const textElements = slide.querySelectorAll('.typing-text');
+                textElements.forEach(el => {
+                    const fullText = el.getAttribute('data-text');
+                    const richText = el.getAttribute('data-rich'); // 获取带标记的富文本
+                    if(!fullText) return;
+                    el.textContent = '';
+                    let charIndex = 0;
+                    
+                    const typeChar = () => {
+                        if (charIndex < fullText.length) {
+                            el.textContent += fullText.charAt(charIndex);
+                            charIndex++;
+                            const timer = setTimeout(typeChar, 40); 
+                            this.typingTimers.push(timer);
+                        } else {
+                            // 当纯文本打字结束后，瞬间将其替换成包含标记的高亮富文本
+                            if (richText) {
+                                el.innerHTML = richText;
+                            }
+                            const cursor = el.nextElementSibling;
+                            if(cursor && cursor.classList.contains('typing-cursor')) {
+                                cursor.style.display = 'none';
+                            }
+                        }
+                    };
+                    typeChar();
+                });
+            },
+
+            clearTyping() {
+                this.typingTimers.forEach(timer => clearTimeout(timer));
+                this.typingTimers = [];
+                document.querySelectorAll('.typing-text').forEach(el => {
+                    el.textContent = '';
+                    const cursor = el.nextElementSibling;
+                    if(cursor && cursor.classList.contains('typing-cursor')) {
+                        cursor.style.display = 'inline-block';
+                    }
+                });
+            },
+
             fireConfetti() {
-                const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
-                for (let i = 0; i < 60; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti z-40';
-                    confetti.style.left = Math.random() * 100 + 'vw';
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                    
-                    if (Math.random() > 0.5) confetti.style.borderRadius = '50%';
-                    
-                    document.body.appendChild(confetti);
-                    setTimeout(() => confetti.remove(), 5000); 
+                // 触发优化后的干脆利落版撒花
+                confettiSystem.fire();
+                
+                // 更快、更轻巧的震荡反馈 (缩短动画时间，防止拖沓)
+                const activePanel = document.querySelector('.slide.active .glass-panel');
+                if(activePanel) {
+                    activePanel.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    activePanel.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        activePanel.style.transform = 'scale(1)';
+                        setTimeout(() => {
+                            activePanel.style.transition = 'none'; 
+                        }, 200);
+                    }, 100);
                 }
             },
 
-            // 修复遮挡：打开时解除 pointer-events-none，显示内容
             openEggModal() {
                 const modal = document.getElementById('eggModal');
                 const overlay = document.getElementById('eggOverlay');
@@ -497,7 +986,7 @@
                 modal.classList.remove('hidden');
                 modal.classList.remove('pointer-events-none');
                 
-                void overlay.offsetWidth; // 触发重排
+                void overlay.offsetWidth;
                 
                 overlay.classList.replace('opacity-0', 'opacity-100');
                 content.classList.replace('opacity-0', 'opacity-100');
@@ -505,7 +994,6 @@
                 content.classList.replace('translate-y-10', 'translate-y-0');
             },
 
-            // 修复遮挡：关闭时恢复 pointer-events-none，彻底让出版面
             closeEggModal() {
                 const overlay = document.getElementById('eggOverlay');
                 const content = document.getElementById('eggContent');
@@ -522,10 +1010,8 @@
                 }, 400);
             },
 
-            // 使用 Toast 替代 Alert，防止卡断点体验
             copyPrompt() {
                 const textToCopy = document.getElementById('promptText').innerText.trim();
-                
                 if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(textToCopy).then(this.showToast.bind(this));
                 } else {
@@ -578,6 +1064,7 @@
 
         window.onload = () => {
             gameLogic.init();
+            confettiSystem.init(); // 初始化撒花系统
         };
     </script>
 </body>
